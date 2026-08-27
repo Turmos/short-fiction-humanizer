@@ -1,66 +1,63 @@
-# Short Fiction Humanizer
+# 中文短篇小说去 AI 改造
 
-Humanize AI-sounding Chinese short fiction without losing plot, voice, pacing, logic, character motives, or emotional impact.
+在不损伤剧情、人物动机、节奏、逻辑和情绪力度的前提下，清理中文短篇小说里的 AI 腔与别扭表达。
 
-`short-fiction-humanizer` is an editorial skill for Chinese short fiction of roughly 8k–30k characters. It combines story-level de-AI review with sentence-level editing for awkward dialogue and narration. It is designed for drafts, outlines, rewrites, and line edits in genres such as suspense, romance, social realism, rebirth, fantasy, system fiction, and game fiction.
+`short-fiction-humanizer` 是面向约 8 千至 3 万字中文短篇的编辑 skill。它同时处理故事层面的 AI 痕迹，以及对白和叙述层面的逐句润色，适用于悬疑、言情、世情、重生、玄幻、系统、游戏等题材的初稿、大纲、改稿和精修。
 
-## What It Checks
+## 检查内容
 
-- Opening hook, information release, conflict results, character agency, reversal or emotional closure, and ending image
-- Unsupported or awkward causality, setting contradictions, sequence errors, and broken conditionals
-- Verb-object and measure-word mismatches, missing objects, translation-like phrasing, and invented jargon
-- Dialogue attribution, speaker voice, overly formal dialogue, interrupted dialogue beats, and missing referents
-- Mechanical characterization, scene-detached actions, unnatural comparisons, and stiff punctuation rhythm
-- AI-style summary lines, over-explained system mechanics, repeated high-frequency phrasing, and artificial symmetry
+- 开头钩子、信息释放、冲突结果、主角主动性、反转或情绪闭环、结尾画面
+- 因果关系生硬、设定矛盾、时序错乱、条件句缺失
+- 动宾和量词搭配错误、宾语缺失、翻译腔、生造术语
+- 对话归属不明、人物语气失真、书面化对白、动作打断对白、指代不明
+- 人物行为机械化、动作脱离场景、比较不自然、标点节奏僵硬
+- AI 式总结、系统机制解释过多、高频词复读、刻意对称结构
 
-The skill preserves protected content: plot facts, setting rules, named terms, character relationships, intentional voice, genre-specific language, and meaningful roughness. It does not promise to evade AI detectors.
+skill 会优先保护剧情事实、设定规则、专有名词、人物关系、有意保留的声线、题材语言和自然的粗粝感。它不会承诺绕过 AI 检测器。
 
-## Installation
+## 安装
 
-Clone the repository into your local skills directory:
+把仓库克隆到本地 skills 目录：
 
 ```bash
 git clone https://github.com/Turmos/short-fiction-humanizer.git
 ```
 
-For Codex or another skill-aware agent, load `SKILL.md` and the relevant files in `references/`. The full short-fiction workflow is in [references/short-fiction.md](references/short-fiction.md).
+在 Codex 或其他支持 skill 的 agent 中，读取 `SKILL.md` 和所需的 `references/` 文件即可使用。短篇小说的完整工作流见 [references/short-fiction.md](references/short-fiction.md)。
 
-## Usage
+## 用法
 
-Ask for a complete revision:
-
-```text
-Use $short-fiction-humanizer to revise this Chinese short-fiction chapter.
-Preserve the plot, setting, character motives, and chapter structure.
-Remove AI-like phrasing and awkward dialogue, but do not flatten the voice.
-```
-
-Ask for line editing:
+完整改稿：
 
 ```text
-Use $short-fiction-humanizer to identify every awkward sentence in this passage.
-For each issue, output: Original / Problem / Revision.
-Then provide the complete revised text with the original paragraph structure.
+使用 $short-fiction-humanizer 修改这章中文短篇小说。
+保留剧情、设定、人物动机和章节结构。
+清理 AI 味和别扭对白，但不要把人物声线磨平。
 ```
 
-Ask for diagnosis only:
+逐句精修：
 
 ```text
-Use $short-fiction-humanizer in annotation mode. Identify awkward sentences only; do not rewrite the text.
+使用 $short-fiction-humanizer 找出这段文字里所有别扭的句子。
+每一处按“原句 / 问题 / 修改”输出，最后给出保持原段落结构的完整修改稿。
 ```
 
-## Layout
+只做诊断：
 
-- `SKILL.md`: entrypoint and workflow
-- `references/short-fiction.md`: Chinese short-fiction editing rules and line-edit output contract
-- `scripts/audit_short_fiction.py`: lexical review hints; it is not a structural validator
-- `agents/openai.yaml`: Codex UI metadata
-- `.claude-plugin/`: Claude Code plugin metadata
+```text
+使用 $short-fiction-humanizer 的 annotation mode，只标出问题，不改写正文。
+```
 
-## License
+## 目录说明
+
+- `SKILL.md`：skill 入口和工作流
+- `references/short-fiction.md`：中文短篇去 AI 规则和逐句审校交付格式
+- `scripts/audit_short_fiction.py`：词汇级复查提示，不能替代结构判断
+- `agents/openai.yaml`：Codex UI 元数据
+- `.claude-plugin/`：Claude Code 插件元数据
+
+## 许可证
 
 [MIT](LICENSE)
 
-The repository deliberately contains no third-party prose corpus or benchmark
-archive. The skill does not need a supplied novel corpus to run; users provide
-the text they are authorized to edit.
+本仓库不包含第三方小说正文、语料库或评测档案。skill 无需自带小说语料才能运行，使用者应只提交自己有权编辑的文本。

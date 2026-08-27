@@ -60,3 +60,7 @@ Use $short-fiction-humanizer in annotation mode. Identify awkward sentences only
 ## License
 
 [MIT](LICENSE)
+
+The repository deliberately contains no third-party prose corpus or benchmark
+archive. The skill does not need a supplied novel corpus to run; users provide
+the text they are authorized to edit.

@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""Flag likely short-fiction AI patterns for human review.
+
+This is a lexical-only diagnostic pass, not a structural validator or
+auto-rewriter. Matches are hints; context and full-manuscript review decide
+whether a phrase is actually a problem.
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+from pathlib import Path
+
+
+PATTERNS: list[tuple[str, str, str]] = [
+    ("空泛升华", r"给这片[^。！？]{0,20}重新起名|文明重新点燃|命运的齿轮|这一刻[，,]?新的时代", "检查是否在替代场面；改回可见变化或下一步动作"),
+    ("命名式总结", r"这(叫|就是)[^。！？]{0,20}(懂吗|的道理|的代价)|所谓的[^。！？]{0,16}(就是|才是)", "确认是不是给现象贴标签；若是，改成事实、动作或人物判断"),
+    ("否定翻转骨架", r"不是[^。！？]{1,30}，?而是|与其[^。！？]{1,30}，?不如", "人工检查是否为口号式对比；正常选择句可保留"),
+    ("硬拗因果/拟人召唤", r"被[^。！？]{0,16}(电|城市|命运|时代|世界)叫来|节点.*长出来|由[^。！？]{0,20}(抽水泵|发电机|系统).*出来的", "补足来处、主体、动作和因果"),
+    ("系统说明书", r"【系统[^】]{0,80}】|系统提示|(?:需求条|属性|任务|奖励|工具栏).{0,30}(?:解锁|激活|提升|完成)|解锁[^。！？]{0,30}(功能|等级|建筑)", "只保留影响选择的规则，其余转成操作和结果"),
+    ("宣传/拔高腔", r"彻底征服|拉满|幸福感|凝聚力|新的篇章|伟大时代|史诗级|神迹诞生", "落到可观察的反应、代价或变化"),
+    ("高频渲染词", r"仿佛|犹如|宛如|似乎|缓缓|渐渐|顿时|忽然|终于|心头一震|呼吸一滞|眼神复杂", "只在同段聚集时处理；保留最贴切的一处，其余改为动作或感官"),
+    ("抽象比喻", r"像一[道种片]闪电|像是[^。！？]{0,20}(宣言|序幕|答案|开关)|仿佛[^。！？]{0,20}(世界|命运|时代)", "检查比喻是否能被现场细节验证"),
+    ("角色工具化", r"好感度(爆表|拉满)|倒贴效忠|三美环伺|美女角色|身材火辣|深V|乳胶兔女郎", "确认外貌/标签是否替代人物目标、专业动作和选择"),
+    ("技术名词拼贴", r"(过滤出来的热咖啡|电叫来|系统空气墙|排队交命)", "核对动作主体和设定物理关系"),
+]
+
+FRAGMENT_RE = re.compile(r"^[，。！？、；：,.!?;:]+$|^[一-龥A-Za-z]{1,2}$")
+REPETITION_TERMS = ("盯着那行字", "愣住", "忽然", "然后", "这账", "那口气", "心没落地", "看着")
+
+
+def snippet(lines: list[str], index: int, start: int, end: int) -> str:
+    line = lines[index]
+    left = max(0, start - 18)
+    right = min(len(line), end + 30)
+    value = line[left:right].strip()
+    previous = lines[index - 1].strip() if index else ""
+    following = lines[index + 1].strip() if index + 1 < len(lines) else ""
+    context = " ".join(part for part in (previous[-40:], value, following[:40]) if part)
+    return context if len(context) <= 130 else f"{context[:127]}..."
+
+
+def audit(path: Path) -> int:
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError:
+        text = path.read_text(encoding="utf-8")
+
+    lines = text.splitlines()
+    findings: list[tuple[int, str, str, str]] = []
+    paragraphs = text.split("\n\n")
+    for paragraph in paragraphs:
+        first_line = text[: text.find(paragraph)].count("\n") + 1
+        for term in REPETITION_TERMS:
+            count = paragraph.count(term)
+            if count >= 3:
+                findings.append((first_line, "高频复读", f"本段“{term}”出现 {count} 次", "保留必要重复，其余检查是否只是凑节奏"))
+        if len(re.findall(r"一半[^。！？]{0,24}一半|没有[^。！？]{0,24}没有|——|……", paragraph)) >= 2:
+            findings.append((first_line, "对仗/破折号聚集", paragraph.strip()[:100], "确认是否连续制造对仗答案感；需要时改回普通连接或停顿"))
+    for number, line in enumerate(lines, 1):
+        for label, pattern, advice in PATTERNS:
+            for match in re.finditer(pattern, line):
+                findings.append((number, label, snippet(lines, number - 1, match.start(), match.end()), advice))
+        stripped = line.strip()
+        quoted = stripped.startswith(("“", "\"")) and stripped.endswith(("”", "\""))
+        if stripped and FRAGMENT_RE.fullmatch(stripped) and not quoted and not stripped.startswith(("###", "【")):
+            findings.append((number, "疑似断词/残句", stripped, "确认是否为有意节奏；否则补齐对白或动作"))
+
+    print(f"文件: {path}")
+    print(f"字符数: {len(text)}  行数: {len(lines)}  命中: {len(findings)}")
+    print("范围: 仅词法线索；前三句、主线、反转比例、线索、钩子和结尾等全篇项目需人工检查。")
+    if not findings:
+        print("未发现规则命中；仍需人工通读结构、因果和人物动机。")
+        return 0
+    for number, label, value, advice in findings:
+        print(f"{number}: [{label}] {value}")
+        print(f"    建议: {advice}")
+    print("以上仅为复查线索，不执行自动替换。")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Audit Chinese short fiction for likely AI patterns")
+    parser.add_argument("paths", nargs="+", type=Path)
+    args = parser.parse_args()
+    return max(audit(path) for path in args.paths)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

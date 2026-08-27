@@ -1,0 +1,12 @@
+{
+  "name": "short-fiction-humanizer",
+  "version": "1.0.0",
+  "description": "Humanize AI-sounding Chinese short fiction and repair awkward logic, dialogue, pacing, and narrative expression while preserving the original story.",
+  "author": {
+    "name": "Turmos"
+  },
+  "homepage": "https://github.com/Turmos/short-fiction-humanizer",
+  "repository": "https://github.com/Turmos/short-fiction-humanizer",
+  "license": "MIT",
+  "keywords": ["chinese", "writing", "de-ai", "ai-slop", "rewrite"]
+}

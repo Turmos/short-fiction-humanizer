@@ -1,0 +1,10 @@
+interface:
+  display_name: "Short Fiction Humanizer"
+  short_description: "Humanize Chinese short fiction and fix awkward narrative or dialogue"
+  icon_small: "./assets/icon.png"
+  icon_large: "./assets/icon-hd.png"
+  brand_color: "#B45309"
+  default_prompt: "Use $short-fiction-humanizer to revise this Chinese short-fiction passage, preserving its plot, voice, character choices, and emotional impact while removing AI-like phrasing and awkward logic."
+
+policy:
+  allow_implicit_invocation: true

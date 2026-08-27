@@ -1,0 +1,21 @@
+{
+  "name": "short-fiction-humanizer",
+  "owner": {
+    "name": "Turmos"
+  },
+  "metadata": {
+    "description": "Short Fiction Humanizer: a Chinese short-fiction de-AI and awkward-expression editing skill.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "short-fiction-humanizer",
+      "description": "Humanize AI-sounding Chinese short fiction while preserving story, voice, pacing, and logic.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Turmos"
+      },
+      "source": "./"
+    }
+  ]
+}
